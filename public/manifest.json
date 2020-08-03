@@ -1,0 +1,15 @@
+{
+  "name": "",
+  "short_name": "",
+  "start_url": "./index.html",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#fff",
+  "theme_color": "#3F51B5",
+  "description": "",
+  "dir": "ltr",
+  "lang": "en-US",
+  "orientation": "portrait-primary",
+  "icons": [],
+  "related_applications": []
+}
