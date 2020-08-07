@@ -4,6 +4,25 @@ var closeCreatePostModalButton = document.querySelector('#close-create-post-moda
 
 function openCreatePostModal() {
   createPostArea.style.display = 'block';
+
+  if (defferetPrompt) {
+    // если уже пытались установить, можно запустить в другом месте, тут:
+    defferetPrompt.prompt();
+
+    defferetPrompt.userChoice.then(function (choiceResult) {
+      // если пользователь кликнул на баннер установки (установил или нет)
+      console.log(choiceResult)
+
+      if (choiceResult.outcome === 'dismissed') {
+        console.log('user cancelled installation')
+      } else {
+        console.log('user added to home screen')
+      }
+    })
+
+    // сотрем переменную
+    defferetPrompt = null;
+  }
 }
 
 function closeCreatePostModal() {

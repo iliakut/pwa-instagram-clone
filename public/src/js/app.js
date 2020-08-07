@@ -1,3 +1,5 @@
+let defferetPrompt;
+
 if ('serviceWorker' in navigator) {
   // serviceWorker работает только с https (кроме localhost)
   navigator.serviceWorker
@@ -6,3 +8,20 @@ if ('serviceWorker' in navigator) {
       console.log('ServiceWorker registered');
     })
 }
+
+window.addEventListener('beforeinstallprompt', function (event) {
+  /*
+  * баннер установки можно превентить (чтобы он не появлялся сам)
+  * и вызвать его в другом месте
+  *
+  * update: событие в новых версиях запускается каждый раз, но не вызывает баннер
+  * значит его можно вызвать в другом месте (см. кнопка плюс в feed.js)
+  * при этом его можно вызывать сколько угодно раз
+  */
+  console.log('beforeinstallprompt fired')
+  event.preventDefault();
+  defferetPrompt = event;
+  return false;
+
+
+})
