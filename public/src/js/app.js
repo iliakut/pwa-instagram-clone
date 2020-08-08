@@ -1,5 +1,9 @@
 let defferetPrompt;
 
+if (!window.Promise) {
+  window.Promise = Promise;
+}
+
 if ('serviceWorker' in navigator) {
   // serviceWorker работает только с https (кроме localhost)
   navigator.serviceWorker
