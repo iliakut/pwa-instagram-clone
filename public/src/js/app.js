@@ -7,6 +7,9 @@ if ('serviceWorker' in navigator) {
     .then(function () {
       console.log('ServiceWorker registered');
     })
+    .catch(function (err) {
+      console.log(err);
+    })
 }
 
 window.addEventListener('beforeinstallprompt', function (event) {
