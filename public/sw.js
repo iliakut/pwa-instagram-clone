@@ -23,7 +23,21 @@ self.addEventListener('install', function (event) {
         * (на самом деле метод пойдет к серверу,
         *  запросит файл и положит его в кэш)
         */
-        cache.add('/src/js/app.js');
+        cache.addAll([
+          '/', //запрос по умолчанию тоже нужно кэшировать
+          '/index.html',
+          '/src/js/app.js',
+          '/src/js/feed.js',
+          '/src/js/promise.js', // не нужны для современных браузеров и в любом случае, sw не поддерживается в старых
+          '/src/js/fetch.js',  // но все-равно загрузим полифилы для ускорения загрузки страницы
+          '/src/js/material.min.js',
+          '/src/css/app.css',
+          '/src/css/feed.css',
+          '/src/images/main-image.jpg',
+          'https://fonts.googleapis.com/css?family=Roboto:400,700',
+          'https://fonts.googleapis.com/icon?family=Material+Icons',
+          'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
+        ])
       })
   );
 })
