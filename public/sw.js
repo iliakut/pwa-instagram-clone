@@ -21,7 +21,8 @@ self.addEventListener('install', function (event) {
         * после выполнения промиса
         * методом add добавим в кэш по роуту файл
         * (на самом деле метод пойдет к серверу,
-        *  запросит файл и положит его в кэш)
+        * запросит файл и положит его в кэш)
+        *  это специфика функции add (addAll)
         */
         cache.addAll([
           '/', //запрос по умолчанию тоже нужно кэшировать
@@ -72,7 +73,18 @@ self.addEventListener('fetch', function (event) {
         if (response) {  // если есть в кэше
           return response; // вернули то что в кэше
         } else { // если нет
-          return fetch(event.request); // вернули тот же запрос (который ушел запрашиваться дальше)
+          return fetch(event.request) // вернули тот же запрос (который ушел запрашиваться дальше)
+            .then(function (response) { // после исполонения запроса получим результат (response)
+               return caches.open('dynamic') // откроем или создатим dynamic кэш
+                .then(function (cache) { // после открытия или создания кэша
+                  cache.put(event.request.url, response.clone()) // положим response данного урла в кэш put - не делает доп. запрос, а кладет по ключу
+                  // response.clone() - нужно сделать клон, так как response используется тоьлко один раз
+                  return response; // необходимо делать return чтобы вернуть ответ оригинальном запросу (который пришел из страницы)
+                })
+            })
+            .catch(function (error) { // обработка ошибок
+
+            })
         }
       })
   );
