@@ -14,7 +14,7 @@ self.addEventListener('install', function (event) {
   * caches open - открывает конкретный кэш или создает, если его нет
   */
   event.waitUntil(
-    caches.open('static') // static - просто имя кэша
+    caches.open('static-v2') // static - просто имя кэша
       .then(function (cache) {
         console.log('[ServiceWorker] precaching App Shell')
         /*
