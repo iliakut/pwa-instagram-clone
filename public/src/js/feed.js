@@ -34,6 +34,24 @@ shareImageButton.addEventListener('click', openCreatePostModal);
 
 closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
 
+/*
+* для кеширование по требованию пользовательских запросов
+*/
+function onSaveButtonClicked(event) {
+  console.log('clicked')
+
+  /*
+  * пользовательский код также имеет доступ к кэшку сервис воркера
+  */
+  if ('caches' in window) {
+    caches.open('user-requested') // кэш запросов пользователя
+      .then(function (cache) {
+        cache.add('https://httpbin.org/get');
+        cache.add('./src/images/sf-boat.jpg');
+      });
+  }
+}
+
 // Create card stub
 function createCard() {
   const cardWrapper = document.createElement('div');
@@ -53,6 +71,10 @@ function createCard() {
   cardSupportingText.className = 'mdl-card__supporting-text';
   cardSupportingText.textContent = 'In San Francisco';
   cardSupportingText.style.textAlign = 'center';
+  // const cardSaveButton = document.createElement('button')
+  // cardSaveButton.textContent = 'Save';
+  // cardSaveButton.addEventListener('click', onSaveButtonClicked)
+  // cardSupportingText.appendChild(cardSaveButton);
   cardWrapper.appendChild(cardSupportingText);
   componentHandler.upgradeElement(cardWrapper);
   sharedMomentsArea.appendChild(cardWrapper);

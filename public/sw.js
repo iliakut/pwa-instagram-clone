@@ -1,3 +1,6 @@
+const CACHE_STATIC_NAME = 'static-v8';
+const CACHE_DYNAMIC_NAME = 'dynamic-v2'
+
 self.addEventListener('install', function (event) {
   /*
   * вызывается браузером
@@ -14,7 +17,11 @@ self.addEventListener('install', function (event) {
   * caches open - открывает конкретный кэш или создает, если его нет
   */
   event.waitUntil(
-    caches.open('static-v2') // static - просто имя кэша
+    caches.open(CACHE_STATIC_NAME) // static - просто имя кэша, для обновления закешированных данных
+      /*
+      * нужно вести версионирование, чтобы создавать новый кеш при обновлении основного кода
+      * помимо этого нужно чистить старый кэш
+      */
       .then(function (cache) {
         console.log('[ServiceWorker] precaching App Shell')
         /*
@@ -45,6 +52,7 @@ self.addEventListener('install', function (event) {
 
 self.addEventListener('activate', function (event) {
   /*
+  * activate - вызывается, когда произошла установка нового воркена
   * вызывается браузером
   * после обновления кода сервис воркера необходимо закрыть и открыть вкладку заново для регистрации
   * так как браузер может думать, что страница все еще общается со старой версией сервис воркера
@@ -52,6 +60,22 @@ self.addEventListener('activate', function (event) {
   * можно вручную в консоле разработчика сделать переригестрацию
   */
   console.log('[ServiceWorker] activating...', event)
+  event.waitUntil( // приостановит автивацию до тех пор, пока не закончатся все дейтсив
+    caches.keys() // получим ключи всех кэшев
+      .then(function (keyList) { // keyList - массив строк с ключами
+        return Promise.all(keyList.map(function (key) {
+          /*
+          * если кэш не равен нашему текущему (то есть старая версия)
+          * и это не динамический кэш, произведем чистку старых кэшев
+          */
+          if (key !== CACHE_STATIC_NAME && key !== CACHE_DYNAMIC_NAME) {
+            console.log('[Service worker]  removing old cache', key);
+            return caches.delete(key); // удалить кэш по ключу
+            // - .delete() - возвращает промис мы возвращаем его, чтобы Promise.all выполнил их все (удаления)
+          }
+        }));
+      })
+  )
   return self.clients.claim();
 })
 
@@ -75,7 +99,7 @@ self.addEventListener('fetch', function (event) {
         } else { // если нет
           return fetch(event.request) // вернули тот же запрос (который ушел запрашиваться дальше)
             .then(function (response) { // после исполонения запроса получим результат (response)
-               return caches.open('dynamic') // откроем или создатим dynamic кэш
+               return caches.open(CACHE_DYNAMIC_NAME) // откроем или создатим dynamic кэш
                 .then(function (cache) { // после открытия или создания кэша
                   cache.put(event.request.url, response.clone()) // положим response данного урла в кэш put - не делает доп. запрос, а кладет по ключу
                   // response.clone() - нужно сделать клон, так как response используется тоьлко один раз
