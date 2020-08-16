@@ -1,4 +1,4 @@
-const CACHE_STATIC_NAME = 'static-v8';
+const CACHE_STATIC_NAME = 'static-v11';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
 
 self.addEventListener('install', function (event) {
@@ -34,6 +34,7 @@ self.addEventListener('install', function (event) {
         cache.addAll([
           '/', //запрос по умолчанию тоже нужно кэшировать
           '/index.html',
+          '/offline.html',
           '/src/js/app.js',
           '/src/js/feed.js',
           '/src/js/promise.js', // не нужны для современных браузеров и в любом случае, sw не поддерживается в старых
@@ -79,38 +80,119 @@ self.addEventListener('activate', function (event) {
   return self.clients.claim();
 })
 
+// self.addEventListener('fetch', function (event) {
+//   /*
+//   * вызывается страницей
+//   * срабатывает, когда страница запрашивает что-то
+//   */
+//
+//   /*
+//   * respondWith позволяет сервис воркеру перехватить запрос и ответить промисом
+//   * fetch(event.request) - просто вернет тот же запрос
+//   * caches.match(event.request) - проверяет, есть ли в кэше данный запрос
+//   *   если есть вернет то что хранится в кэше, если нет вернет undefined
+//   */
+//   event.respondWith( // перехватили запрос
+//     caches.match(event.request) // проверили наличие в кэше
+//       .then(function (response) {
+//         if (response) {  // если есть в кэше
+//           return response; // вернули то что в кэше
+//         } else { // если нет
+//           return fetch(event.request) // вернули тот же запрос (который ушел запрашиваться дальше)
+//             .then(function (response) { // после исполонения запроса получим результат (response)
+//                return caches.open(CACHE_DYNAMIC_NAME) // откроем или создатим dynamic кэш
+//                 .then(function (cache) { // после открытия или создания кэша
+//                   cache.put(event.request.url, response.clone()) // положим response данного урла в кэш put - не делает доп. запрос, а кладет по ключу
+//                   // response.clone() - нужно сделать клон, так как response используется тоьлко один раз
+//                   return response; // необходимо делать return чтобы вернуть ответ оригинальном запросу (который пришел из страницы)
+//                 })
+//             })
+//             .catch(function (error) { // обработка ошибок
+//               /*
+//               * если не нашли закешированной страницы
+//               * вернем страницу offline.html
+//               * это вызовет сайд-эффект, что если мы не закешировали
+//               * какой-то пользовательский запрос, то попадем на эту страницу
+//               */
+//               return caches.open(CACHE_STATIC_NAME)
+//                 .then(function (cache) {
+//                   return cache.match('/offline.html');
+//                 })
+//             })
+//         }
+//       })
+//   );
+//
+// });
+
+// Стратегия cache-only - когда все берется из кеша
+// Стратегия network only - когда sw возвращает все сетевые запроси и ничего не кешируется
+
+/*
+* Стратегия network with cache-fallback
+* стратегия плоха тем, что если меделнные ответы, плохой интернет
+* пользователю придется ждать ответа
+*/
+// self.addEventListener('fetch', function (event) {
+//   event.respondWith( // перехватили запрос
+//     fetch(event.request) // сделали запрос
+//       .then(function (res) { // получили ответ
+//         return caches.open(CACHE_DYNAMIC_NAME)
+//           .then(function (cache) {
+//             cache.put(event.request.url, res.clone()) // закешировали ответ
+//             return res // вернули ответ
+//           })
+//       })
+//       .catch(function (err) {
+//         return caches.match(event.request) // вернули кэш если запрос не удался
+//       })
+//   );
+// });
+
+/*
+* Стратегия cache then network
+* страница получает данные из кэша,
+* если есть обновленные данные, то они сначала загружаются в кэш
+* затем передаются странице.
+* Нужно прописать логику и в sw и на странице
+*/
 self.addEventListener('fetch', function (event) {
-  /*
-  * вызывается страницей
-  * срабатывает, когда страница запрашивает что-то
-  */
+  const url = 'https://httpbin.org/get';
 
-  /*
-  * respondWith позволяет сервис воркеру перехватить запрос и ответить промисом
-  * fetch(event.request) - просто вернет тот же запрос
-  * caches.match(event.request) - проверяет, есть ли в кэше данный запрос
-  *   если есть вернет то что хранится в кэше, если нет вернет undefined
-  */
-  event.respondWith( // перехватили запрос
-    caches.match(event.request) // проверили наличие в кэше
-      .then(function (response) {
-        if (response) {  // если есть в кэше
-          return response; // вернули то что в кэше
-        } else { // если нет
-          return fetch(event.request) // вернули тот же запрос (который ушел запрашиваться дальше)
-            .then(function (response) { // после исполонения запроса получим результат (response)
-               return caches.open(CACHE_DYNAMIC_NAME) // откроем или создатим dynamic кэш
-                .then(function (cache) { // после открытия или создания кэша
-                  cache.put(event.request.url, response.clone()) // положим response данного урла в кэш put - не делает доп. запрос, а кладет по ключу
-                  // response.clone() - нужно сделать клон, так как response используется тоьлко один раз
-                  return response; // необходимо делать return чтобы вернуть ответ оригинальном запросу (который пришел из страницы)
-                })
+  if (event.request.url.indexOf(url) > -1) { // если в запросе есть url - см. константу выше
+    event.respondWith(
+      caches.open(CACHE_DYNAMIC_NAME)
+        .then(function (cache) {
+          return fetch(event.request)
+            .then(function (res) {
+              cache.put(event.request, res.clone());
+              return res;
             })
-            .catch(function (error) { // обработка ошибок
-
-            })
-        }
-      })
-  );
-
+        })
+    );
+  } else { // offline поддержка
+    event.respondWith(
+      caches.match(event.request) // проверили наличие в кэше
+        .then(function (response) {
+          if (response) {  // если есть в кэше
+            return response; // вернули то что в кэше
+          } else { // если нет
+            return fetch(event.request) // вернули тот же запрос (который ушел запрашиваться дальше)
+              .then(function (response) { // после исполонения запроса получим результат (response)
+                 return caches.open(CACHE_DYNAMIC_NAME) // откроем или создатим dynamic кэш
+                  .then(function (cache) { // после открытия или создания кэша
+                    cache.put(event.request.url, response.clone()) // положим response данного урла в кэш put - не делает доп. запрос, а кладет по ключу
+                    return response; // необходимо делать return чтобы вернуть ответ оригинальном запросу (который пришел из страницы)
+                  })
+              })
+              .catch(function (error) { // обработка ошибок
+                return caches.open(CACHE_STATIC_NAME)
+                  .then(function (cache) {
+                    return cache.match('/offline.html');
+                  })
+              })
+          }
+        })
+    )
+  }
 });
