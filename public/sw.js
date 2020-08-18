@@ -1,5 +1,21 @@
 const CACHE_STATIC_NAME = 'static-v11';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
+const STATIC_FILES = [
+  '/', //запрос по умолчанию тоже нужно кэшировать
+  '/index.html',
+  '/offline.html',
+  '/src/js/app.js',
+  '/src/js/feed.js',
+  '/src/js/promise.js', // не нужны для современных браузеров и в любом случае, sw не поддерживается в старых
+  '/src/js/fetch.js',  // но все-равно загрузим полифилы для ускорения загрузки страницы
+  '/src/js/material.min.js',
+  '/src/css/app.css',
+  '/src/css/feed.css',
+  '/src/images/main-image.jpg',
+  'https://fonts.googleapis.com/css?family=Roboto:400,700',
+  'https://fonts.googleapis.com/icon?family=Material+Icons',
+  'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
+]
 
 self.addEventListener('install', function (event) {
   /*
@@ -31,22 +47,7 @@ self.addEventListener('install', function (event) {
         * запросит файл и положит его в кэш)
         *  это специфика функции add (addAll)
         */
-        cache.addAll([
-          '/', //запрос по умолчанию тоже нужно кэшировать
-          '/index.html',
-          '/offline.html',
-          '/src/js/app.js',
-          '/src/js/feed.js',
-          '/src/js/promise.js', // не нужны для современных браузеров и в любом случае, sw не поддерживается в старых
-          '/src/js/fetch.js',  // но все-равно загрузим полифилы для ускорения загрузки страницы
-          '/src/js/material.min.js',
-          '/src/css/app.css',
-          '/src/css/feed.css',
-          '/src/images/main-image.jpg',
-          'https://fonts.googleapis.com/css?family=Roboto:400,700',
-          'https://fonts.googleapis.com/icon?family=Material+Icons',
-          'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
-        ])
+        cache.addAll(STATIC_FILES)
       })
   );
 })
@@ -125,8 +126,8 @@ self.addEventListener('activate', function (event) {
 //
 // });
 
-// Стратегия cache-only - когда все берется из кеша
-// Стратегия network only - когда sw возвращает все сетевые запроси и ничего не кешируется
+// Стратегия cache-only - когда все берется из кеша, можно кэшировать только статичные страницы
+// Стратегия network only - когда sw возвращает все сетевые запросы и ничего не кешируется
 
 /*
 * Стратегия network with cache-fallback
@@ -158,7 +159,7 @@ self.addEventListener('activate', function (event) {
 */
 self.addEventListener('fetch', function (event) {
   const url = 'https://httpbin.org/get';
-
+  // эта часть реализует cache then network
   if (event.request.url.indexOf(url) > -1) { // если в запросе есть url - см. константу выше
     event.respondWith(
       caches.open(CACHE_DYNAMIC_NAME)
@@ -170,7 +171,7 @@ self.addEventListener('fetch', function (event) {
             })
         })
     );
-  } else { // offline поддержка
+  } else { // offline поддержка cache with network fallback
     event.respondWith(
       caches.match(event.request) // проверили наличие в кэше
         .then(function (response) {
@@ -188,7 +189,9 @@ self.addEventListener('fetch', function (event) {
               .catch(function (error) { // обработка ошибок
                 return caches.open(CACHE_STATIC_NAME)
                   .then(function (cache) {
-                    return cache.match('/offline.html');
+                    if (event.request.headers.get('accept').includes('text/html')) { // только страницы нуждается в фалбеке в виде офлайн страницы
+                      return cache.match('/offline.html'); // другие запросы, например css не нуждаются в этой странице
+                    }
                   })
               })
           }
