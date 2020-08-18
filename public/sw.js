@@ -191,6 +191,7 @@ self.addEventListener('fetch', function (event) {
                   .then(function (cache) {
                     if (event.request.headers.get('accept').includes('text/html')) { // только страницы нуждается в фалбеке в виде офлайн страницы
                       return cache.match('/offline.html'); // другие запросы, например css не нуждаются в этой странице
+                      // но можно сделать фалбэк на картинки например
                     }
                   })
               })
