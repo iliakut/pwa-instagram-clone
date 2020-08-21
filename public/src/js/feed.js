@@ -24,6 +24,19 @@ function openCreatePostModal() {
     // сотрем переменную
     defferetPrompt = null;
   }
+
+  /*
+  * удаление сервис воркера
+  */
+  // if ('serviceWorker' in navigator) {
+  //   navigator.serviceWorker.getRegistrations()
+  //     .then(function (registrations) {
+  //       for (let registration of registrations) {
+  //         registration.unregister();
+  //       }
+  //
+  //     })
+  // }
 }
 
 function closeCreatePostModal() {
@@ -86,10 +99,19 @@ function createCard() {
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
-const url = 'https://httpbin.org/get';
+const url = 'https://httpbin.org/post';
 let networkDataReceived = false;
 
-fetch(url)
+fetch(url, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  body: JSON.stringify({
+    message: 'Some message'
+  })
+})
   .then(function(res) {
     return res.json();
   })

@@ -1,4 +1,4 @@
-const CACHE_STATIC_NAME = 'static-v11';
+const CACHE_STATIC_NAME = 'static-v12';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
 const STATIC_FILES = [
   '/', //запрос по умолчанию тоже нужно кэшировать
@@ -16,6 +16,24 @@ const STATIC_FILES = [
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
 ]
+
+/*
+* функция автоочистики кэша
+* будет рекурсивно очищать кэш, пока его длина не будет равна maxItems
+*/
+function trimCache(cacheName, maxItems) {
+  caches.open(cacheName)
+    .then(function (cache) {
+      return cache.keys()
+        .then(function (keys) {
+          if (keys.length > maxItems) {
+            cache.delete(keys[0])
+              .then(trimCache(cacheName, maxItems));
+          }
+        })
+    })
+
+}
 
 self.addEventListener('install', function (event) {
   /*
@@ -166,6 +184,7 @@ self.addEventListener('fetch', function (event) {
         .then(function (cache) {
           return fetch(event.request)
             .then(function (res) {
+              // trimCache(CACHE_DYNAMIC_NAME, 3); // очистка кэша
               cache.put(event.request, res.clone());
               return res;
             })
@@ -182,6 +201,7 @@ self.addEventListener('fetch', function (event) {
               .then(function (response) { // после исполонения запроса получим результат (response)
                  return caches.open(CACHE_DYNAMIC_NAME) // откроем или создатим dynamic кэш
                   .then(function (cache) { // после открытия или создания кэша
+                    // trimCache(CACHE_DYNAMIC_NAME, 3); // очистка кэша
                     cache.put(event.request.url, response.clone()) // положим response данного урла в кэш put - не делает доп. запрос, а кладет по ключу
                     return response; // необходимо делать return чтобы вернуть ответ оригинальном запросу (который пришел из страницы)
                   })
