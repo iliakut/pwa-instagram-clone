@@ -176,7 +176,7 @@ self.addEventListener('activate', function (event) {
 * Нужно прописать логику и в sw и на странице
 */
 self.addEventListener('fetch', function (event) {
-  const url = 'https://httpbin.org/get';
+  const url = 'https://pwagram-92c0e.firebaseio.com/posts.json';
   // эта часть реализует cache then network
   if (event.request.url.indexOf(url) > -1) { // если в запросе есть url - см. константу выше
     event.respondWith(
