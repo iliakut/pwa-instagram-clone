@@ -1,4 +1,6 @@
-const CACHE_STATIC_NAME = 'static-v12';
+importScripts('/src/js/idb.js'); // метод для импорта скриптов из проекта в SW
+
+const CACHE_STATIC_NAME = 'static-v13';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
 const STATIC_FILES = [
   '/', //запрос по умолчанию тоже нужно кэшировать
@@ -6,6 +8,7 @@ const STATIC_FILES = [
   '/offline.html',
   '/src/js/app.js',
   '/src/js/feed.js',
+  '/src/js/idb.js',
   '/src/js/promise.js', // не нужны для современных браузеров и в любом случае, sw не поддерживается в старых
   '/src/js/fetch.js',  // но все-равно загрузим полифилы для ускорения загрузки страницы
   '/src/js/material.min.js',
@@ -15,7 +18,17 @@ const STATIC_FILES = [
   'https://fonts.googleapis.com/css?family=Roboto:400,700',
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
-]
+];
+
+/*
+* indexedDB
+* idb.open(имя, версия, колбэк)
+*/
+const dbPromise = idb.open('post-store', 1, function (db) {
+  if (!db.objectStoreNames.contains('posts')) {
+    db.createObjectStore('posts', {keyPath: 'id'});
+  }
+});
 
 /*
 * функция автоочистики кэша
