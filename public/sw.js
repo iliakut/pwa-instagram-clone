@@ -1,4 +1,5 @@
 importScripts('/src/js/idb.js'); // метод для импорта скриптов из проекта в SW
+importScripts('/src/js/utility.js');
 
 const CACHE_STATIC_NAME = 'static-v13';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
@@ -19,16 +20,6 @@ const STATIC_FILES = [
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
 ];
-
-/*
-* indexedDB
-* idb.open(имя, версия, колбэк)
-*/
-const dbPromise = idb.open('post-store', 1, function (db) {
-  if (!db.objectStoreNames.contains('posts')) {
-    db.createObjectStore('posts', {keyPath: 'id'});
-  }
-});
 
 /*
 * функция автоочистики кэша
@@ -198,13 +189,7 @@ self.addEventListener('fetch', function (event) {
           clonedRes.json()
             .then(function (data) {
               for (let key in data) {
-                dbPromise // запись данных в iDB
-                  .then(function (db) {
-                    const tx = db.transaction('posts', 'readwrite'); // transaction
-                    const store = tx.objectStore('posts');
-                    store.put(data[key]);
-                    return tx.complete;
-                  })
+                writeData('posts', data[key]);
               }
             })
           return res;
