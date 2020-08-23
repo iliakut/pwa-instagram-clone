@@ -192,16 +192,33 @@ self.addEventListener('fetch', function (event) {
   const url = 'https://pwagram-92c0e.firebaseio.com/posts.json';
   // эта часть реализует cache then network
   if (event.request.url.indexOf(url) > -1) { // если в запросе есть url - см. константу выше
-    event.respondWith(
-      caches.open(CACHE_DYNAMIC_NAME)
-        .then(function (cache) {
-          return fetch(event.request)
-            .then(function (res) {
-              // trimCache(CACHE_DYNAMIC_NAME, 3); // очистка кэша
-              cache.put(event.request, res.clone());
-              return res;
+    event.respondWith(fetch(event.request)
+        .then(function (res) {
+          const clonedRes = res.clone();
+          clonedRes.json()
+            .then(function (data) {
+              for (let key in data) {
+                dbPromise // запись данных в iDB
+                  .then(function (db) {
+                    const tx = db.transaction('posts', 'readwrite'); // transaction
+                    const store = tx.objectStore('posts');
+                    store.put(data[key]);
+                    return tx.complete;
+                  })
+              }
             })
+          return res;
         })
+      // хранение запросов в динамическом кэше (вместо indexDB)
+      // caches.open(CACHE_DYNAMIC_NAME)
+      //   .then(function (cache) {
+      //     return fetch(event.request)
+      //       .then(function (res) {
+      //         // trimCache(CACHE_DYNAMIC_NAME, 3); // очистка кэша
+      //         cache.put(event.request, res.clone());
+      //         return res;
+      //       })
+      //   })
     );
   } else { // offline поддержка cache with network fallback
     event.respondWith(
