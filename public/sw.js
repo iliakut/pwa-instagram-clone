@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js'); // метод для импорта скриптов из проекта в SW
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v13';
+const CACHE_STATIC_NAME = 'static-v15';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
 const STATIC_FILES = [
   '/', //запрос по умолчанию тоже нужно кэшировать
@@ -10,6 +10,7 @@ const STATIC_FILES = [
   '/src/js/app.js',
   '/src/js/feed.js',
   '/src/js/idb.js',
+  '/src/js/utility.js',
   '/src/js/promise.js', // не нужны для современных браузеров и в любом случае, sw не поддерживается в старых
   '/src/js/fetch.js',  // но все-равно загрузим полифилы для ускорения загрузки страницы
   '/src/js/material.min.js',
@@ -186,12 +187,15 @@ self.addEventListener('fetch', function (event) {
     event.respondWith(fetch(event.request)
         .then(function (res) {
           const clonedRes = res.clone();
-          clonedRes.json()
+          clearAllData('posts') // стереть все данные в базе
+            .then(function () {
+               return clonedRes.json()
+            })
             .then(function (data) {
               for (let key in data) {
-                writeData('posts', data[key]);
+                writeData('posts', data[key]) // записать в базу
               }
-            })
+            });
           return res;
         })
       // хранение запросов в динамическом кэше (вместо indexDB)

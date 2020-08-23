@@ -123,23 +123,34 @@ fetch(url)
     updateUI(dataArray);
   });
 
-
-if ('caches' in window) {
-  caches.match(url)
-    .then(function (response) {
-      if (response) {
-        return response.json();
-      }
-    })
+// idb
+if ('indexedDB' in window) {
+  readAllData('posts')
     .then(function (data) {
-      console.log('From cache', data);
       if (!networkDataReceived) {
-        const dataArray = [];
-        for (let key in data) {
-          dataArray.push(data[key]);
-        }
-        updateUI(dataArray);
+        console.log('From idb', data);
+        updateUI(data);
       }
     })
 }
+
+// cache
+// if ('caches' in window) {
+//   caches.match(url)
+//     .then(function (response) {
+//       if (response) {
+//         return response.json();
+//       }
+//     })
+//     .then(function (data) {
+//       console.log('From cache', data);
+//       if (!networkDataReceived) {
+//         const dataArray = [];
+//         for (let key in data) {
+//           dataArray.push(data[key]);
+//         }
+//         updateUI(dataArray);
+//       }
+//     })
+// }
 
