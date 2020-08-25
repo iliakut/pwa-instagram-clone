@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js'); // метод для импорта скриптов из проекта в SW
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v15';
+const CACHE_STATIC_NAME = 'static-v21';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
 const STATIC_FILES = [
   '/', //запрос по умолчанию тоже нужно кэшировать
