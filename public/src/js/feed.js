@@ -4,7 +4,7 @@ const closeCreatePostModalButton = document.querySelector('#close-create-post-mo
 const sharedMomentsArea = document.querySelector('#shared-moments');
 
 function openCreatePostModal() {
-  createPostArea.style.display = 'block';
+  createPostArea.style.transform = 'translateY(0)';
 
   if (defferetPrompt) {
     // если уже пытались установить, можно запустить в другом месте, тут:
@@ -40,7 +40,7 @@ function openCreatePostModal() {
 }
 
 function closeCreatePostModal() {
-  createPostArea.style.display = 'none';
+  createPostArea.style.transform = 'translateY(100vh)';
 }
 
 shareImageButton.addEventListener('click', openCreatePostModal);
