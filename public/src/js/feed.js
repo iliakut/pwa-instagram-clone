@@ -157,6 +157,26 @@ if ('indexedDB' in window) {
 //     })
 // }
 
+function sendData() {
+  fetch('https://pwagram-92c0e.firebaseio.com/posts.json', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      id: new Date().toISOString(),
+      title: titleInput.value,
+      location: locationInput.value,
+      image: 'https://firebasestorage.googleapis.com/v0/b/pwagram-92c0e.appspot.com/o/resilence-chicago.jpg?alt=media&token=e58f7c8d-e8be-4d09-b314-9a70cd94c5fd'
+    })
+  })
+    .then(function (res) {
+      console.log('Sent data', res);
+      updateUI();
+    })
+};
+
 form.addEventListener('submit', function (event) {
   event.preventDefault();
 
@@ -189,5 +209,7 @@ form.addEventListener('submit', function (event) {
             console.log(err);
           });
       });
+  } else {
+    sendData();
   }
 });
