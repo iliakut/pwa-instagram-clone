@@ -2,6 +2,9 @@ const shareImageButton = document.querySelector('#share-image-button');
 const createPostArea = document.querySelector('#create-post');
 const closeCreatePostModalButton = document.querySelector('#close-create-post-modal-btn');
 const sharedMomentsArea = document.querySelector('#shared-moments');
+const form = document.querySelector('form');
+const titleInput = document.querySelector('#title');
+const locationInput = document.querySelector('#location');
 
 function openCreatePostModal() {
   createPostArea.style.transform = 'translateY(0)';
@@ -154,3 +157,37 @@ if ('indexedDB' in window) {
 //     })
 // }
 
+form.addEventListener('submit', function (event) {
+  event.preventDefault();
+
+  if (titleInput.value.trim() === '' || locationInput.value.trim() === '') {
+    alert('Please enter valid data!');
+    return;
+  }
+
+  closeCreatePostModal();
+
+  if ('serviceWorker' in navigator && 'SyncManager' in window) { // SyncManager - API для background sync
+    navigator.serviceWorker.ready
+      .then(function (sw) {
+        const post = {
+          id: new Date().toISOString(),
+          title: titleInput.value,
+          location: locationInput.value
+        }
+        writeData('sync-posts', post) // записать пост в iDB
+          .then(function () {
+            return sw.sync.register('sync-new-post'); // регистрация SyncManager, tag - имя sync тега
+          })
+          .then(function () {
+            // нотификация
+            const snackbarContainer = document.querySelector('#confirmation-toast');
+            const data = { message: 'Your post was saved for syncing!' };
+            snackbarContainer.MaterialSnackbar.showSnackbar(data);
+          })
+          .catch(function (err) {
+            console.log(err);
+          });
+      });
+  }
+});

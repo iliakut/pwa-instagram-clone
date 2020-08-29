@@ -3,8 +3,14 @@
 * idb.open(имя, версия, колбэк)
 */
 const dbPromise = idb.open('post-store', 1, function (db) {
+  // данные полученные с сервера
   if (!db.objectStoreNames.contains('posts')) {
     db.createObjectStore('posts', {keyPath: 'id'});
+  }
+
+  // даннные для отправки на сервер
+  if (!db.objectStoreNames.contains('sync-posts')) {
+    db.createObjectStore('sync-posts', {keyPath: 'id'});
   }
 });
 
