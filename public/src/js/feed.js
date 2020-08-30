@@ -175,6 +175,9 @@ function sendData() {
       console.log('Sent data', res);
       updateUI();
     })
+    .catch(function (err) {
+      console.log(err);
+    })
 };
 
 form.addEventListener('submit', function (event) {
@@ -197,7 +200,7 @@ form.addEventListener('submit', function (event) {
         }
         writeData('sync-posts', post) // записать пост в iDB
           .then(function () {
-            return sw.sync.register('sync-new-post'); // регистрация SyncManager, tag - имя sync тега
+            return sw.sync.register('sync-new-posts'); // регистрация SyncManager, tag - имя sync тега
           })
           .then(function () {
             // нотификация
