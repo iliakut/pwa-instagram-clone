@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js'); // метод для импорта скриптов из проекта в SW
 importScripts('/src/js/utility.js');
 
-const CACHE_STATIC_NAME = 'static-v23';
+const CACHE_STATIC_NAME = 'static-v24';
 const CACHE_DYNAMIC_NAME = 'dynamic-v2'
 const STATIC_FILES = [
   '/', //запрос по умолчанию тоже нужно кэшировать
@@ -263,9 +263,16 @@ self.addEventListener('sync', function (event) {
               })
             })
               .then(function (res) {
-                console.log('Sent data', res);
                 if (res.ok) { // удалить после успешной отправки
-                  deleteItemFromIDB('sync-posts', dt.id); // not working correctly
+                  res.json()
+                    .then(function (resData) {
+                      deleteItemFromIDB('sync-posts', dt.id); // not working correctly
+                      /*
+                      * не работает правильно т.к. сервер не возвращает корректный id сущности
+                      * чтобы мы удалили его из idb
+                      * для этого нужно настроить firebase
+                      */
+                    })
                 }
               })
               .catch(function (err) {
