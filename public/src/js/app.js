@@ -1,4 +1,5 @@
 let defferetPrompt;
+let enableNotificationsButtons = document.querySelectorAll('.enable-notifications');
 
 if (!window.Promise) {
   window.Promise = Promise;
@@ -29,6 +30,30 @@ window.addEventListener('beforeinstallprompt', function (event) {
   event.preventDefault();
   defferetPrompt = event;
   return false;
-
-
 })
+
+function displayConfirmNotification() {
+  const options = {
+    body: 'You successfully subscribed to our notification service!'
+  }
+
+  new Notification('Successfully subscribed!', options);
+}
+
+function asnForNotificationPermission() {
+  Notification.requestPermission(function (result) {
+    console.log('user choice', result);
+    if (result !== 'granted') {
+      console.log('no notification permission granted!');
+    } else {
+      displayConfirmNotification();
+    }
+  })
+}
+
+if ('Notification' in window) {
+  for (let i = 0; i < enableNotificationsButtons.length; i++) {
+    enableNotificationsButtons[i].style.display = 'inline-block';
+    enableNotificationsButtons[i].addEventListener('click', asnForNotificationPermission);
+  }
+}
