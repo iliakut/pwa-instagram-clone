@@ -33,11 +33,28 @@ window.addEventListener('beforeinstallprompt', function (event) {
 })
 
 function displayConfirmNotification() {
-  const options = {
-    body: 'You successfully subscribed to our notification service!'
+  // нотификация через воркер
+  if ('serviceWorker' in navigator) {
+    const options = {
+      body: 'You successfully subscribed to our notification service! (body)',
+      icon: '/src/images/icons/app-icon-96x96.png',
+      image: '/src/images/sf-boat.png',
+      dir: 'ltr',
+      lang: 'en-US',
+      vibrate: [100, 50, 200], // вибрация
+      badge: '/src/images/icons/app-icon-96x96.png',
+      tag: 'confirm-notification', // как отображаются несоклько нотификаций
+      renotify: true // нотификации с одним тегом будут (false - не будут) приходить
+    }
+
+    navigator.serviceWorker.ready
+      .then(function (swreg) {
+        swreg.showNotification('Successfully subscribed! (from SW)', options)
+      });
   }
 
-  new Notification('Successfully subscribed!', options);
+  // нотификация со страницы из браузера
+  // new Notification('Successfully subscribed!');
 }
 
 function asnForNotificationPermission() {
@@ -51,6 +68,7 @@ function asnForNotificationPermission() {
   })
 }
 
+// включение нотификаций
 if ('Notification' in window) {
   for (let i = 0; i < enableNotificationsButtons.length; i++) {
     enableNotificationsButtons[i].style.display = 'inline-block';
