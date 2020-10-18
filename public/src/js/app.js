@@ -44,7 +44,11 @@ function displayConfirmNotification() {
       vibrate: [100, 50, 200], // вибрация
       badge: '/src/images/icons/app-icon-96x96.png',
       tag: 'confirm-notification', // как отображаются несоклько нотификаций
-      renotify: true // нотификации с одним тегом будут (false - не будут) приходить
+      renotify: true, // нотификации с одним тегом будут (false - не будут) приходить
+      actions: [ // появляются в SW
+        { action: 'confirm', title: 'Okay', icon: '/src/images/icons/app-icon-96x96.png' },
+        { action: 'cancel', title: 'Cancel', icon: '/src/images/icons/app-icon-96x96.png' }
+      ]
     }
 
     navigator.serviceWorker.ready

@@ -283,3 +283,23 @@ self.addEventListener('sync', function (event) {
     );
   }
 });
+
+// нотивикации - клик
+self.addEventListener('notificationclick', function (event) {
+  const notification = event.notification;
+  const action = event.action;
+
+  console.log(notification);
+
+  if (action === 'confirm') {
+    console.log('confirm');
+    notification.close();
+  } else {
+    console.log(action);
+    notification.close();
+  }
+})
+// закрытие нотификации
+self.addEventListener('notificationclose', function (event) {
+  console.log('Notification was closed', event);
+})
