@@ -61,19 +61,41 @@ function displayConfirmNotification() {
   // new Notification('Successfully subscribed!');
 }
 
+function configurePushSub() {
+  if (!('serviceWorker' in navigator)) return;
+
+  let reg;
+  navigator.serviceWorker.ready
+    .then(function (swreg) {
+      reg = swreg;
+      swreg.pushManager.getSubscription();
+    })
+    .then(function (sub) {
+      if (sub === null) {
+        // Create a new sub
+        reg.pushManager.subscribe({
+          userVisibleOnly: true
+        });
+      } else {
+      }
+    })
+
+};
+
 function asnForNotificationPermission() {
   Notification.requestPermission(function (result) {
     console.log('user choice', result);
     if (result !== 'granted') {
       console.log('no notification permission granted!');
     } else {
-      displayConfirmNotification();
+      // displayConfirmNotification();
+      configurePushSub();
     }
   })
 }
 
 // включение нотификаций
-if ('Notification' in window) {
+if ('Notification' in window && 'serviceWorker' in navigator) {
   for (let i = 0; i < enableNotificationsButtons.length; i++) {
     enableNotificationsButtons[i].style.display = 'inline-block';
     enableNotificationsButtons[i].addEventListener('click', asnForNotificationPermission);
