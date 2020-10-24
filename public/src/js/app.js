@@ -73,12 +73,35 @@ function configurePushSub() {
     .then(function (sub) {
       if (sub === null) {
         // Create a new sub
+        const vapidPublicKey = '...';
+        const convertedVapidPublicKey = '...' //urlBase64Uint8Array(vapidPublicKey);
         reg.pushManager.subscribe({
-          userVisibleOnly: true
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidPublicKey
         });
       } else {
       }
     })
+    .then(function (newSub) {
+      // также необходимо очищать старые подписки после переригестрации сервис воркера
+      return fetch('server', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          body: JSON.stringify(newSub)
+        }
+      })
+    })
+    .then(function (res) {
+      if (res.ok) {
+        displayConfirmNotification()
+      }
+    })
+    .catch(function (err) {
+      console.log(err)
+    })
+
 
 };
 
