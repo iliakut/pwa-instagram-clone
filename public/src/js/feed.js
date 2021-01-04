@@ -49,6 +49,7 @@ captureButton.addEventListener('click', function(event) {
   videoPlayer.srcObject.getVideoTracks().forEach(function(track) {
     track.stop();
   });
+  picture = dataURItoBlob(canvasElement.toDataUrl());
 });
 
 function openCreatePostModal() {
